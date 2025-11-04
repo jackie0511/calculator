@@ -420,10 +420,42 @@ export default function ExpCounter() {
                 log.add(`${timeString(vd * 8)} (${Math.round(vd / 112.5 * 1000) / 1000}): ${processList[now]}${tierList[PS[now].tier]}${levelList[PS[now].level]}${PS[now].process + 1}重`)
                 reachDays[Math.ceil(vd / 10800 + 1).toString()] = `${processList[now]}${levelList[PS[now].level]}${PS[now].process + 1}重`
             }
-            if (PS[now].process >= exps[PS[now].tier][PS[now].level].length) {
-                PS[now].process = 0;
-                PS[now].level += 1;
-                log.add(`${timeString(vd * 8)} (${Math.round(vd / 112.5 * 1000) / 1000}): ${processList[now]}${tierList[PS[now].tier]}${levelList[PS[now].level]}`)
+            if (PS[now].process >= exps[PS[now].tier][PS[now].level].length) {  
+                // 檢查是否需要延遲突破(半步特殊邏輯)  
+                const shouldDelayBreakthrough = (  
+                    (now === 0 || now === 1) && // 主修或輔修  
+                    buff === 3 && // 選擇半步  
+                    PS[now].level === 1 && // 當前在中期  
+                    [1, 2, 3, 4, 5, 6, 7].includes(PS[now].tier) // 返虛到太乙  
+                );  
+      
+                if (shouldDelayBreakthrough) {  
+                    // 計算後期+圓滿整個階段需要的總經驗  
+                    const laterStageExp = exps[PS[now].tier][2].reduce((a, b) => a + b, 0);  
+                    const perfectStageExp = exps[PS[now].tier][3].reduce((a, b) => a + b, 0);  
+                    const totalExpNeeded = laterStageExp + perfectStageExp;  
+          
+                    // 如果累積經驗還不夠,繼續累積  
+                    if (PS[now].exp < totalExpNeeded) {  
+                        // 不升級,繼續累積經驗  
+                        // 只在第一次達到中期圓滿時記錄  
+                        if (PS[now].process === exps[PS[now].tier][PS[now].level].length) {  
+                            log.add(`${timeString(vd * 8)}: ${processList[now]}中期圓滿,開始累積經驗 (需要 ${formatNumber(totalExpNeeded)} 才能突破至圓滿)`);  
+                        }  
+                        // 保持在中期最後一重,不升級  
+                    } else {  
+                        // 經驗足夠,一次性突破到圓滿  
+                        PS[now].exp -= totalExpNeeded;  
+                        PS[now].process = 0;  
+                        PS[now].level = 3; // 直接升到圓滿  
+                        log.add(`${timeString(vd * 8)}: ${processList[now]}累積足夠經驗,突破至圓滿`);  
+                    }  
+                } else {  
+                    // 正常升級邏輯  
+                    PS[now].process = 0;  
+                    PS[now].level += 1;  
+                    log.add(`${timeString(vd * 8)} (${Math.round(vd / 112.5 * 1000) / 1000}): ${processList[now]}${tierList[PS[now].tier]}${levelList[PS[now].level]}`);  
+                }  
             }
 
             // stop done.
