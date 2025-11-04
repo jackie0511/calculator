@@ -246,20 +246,24 @@ export default function ExpCounter() {
                 sum.table += gains;
                 fruitAmount = 0;
             }
-            let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;
-            let speed1 = calcAir * (customEffective === false ? 
-                ((effList[PS[0]?.tier]?.[PS[0]?.level] || 0) / 100) : 
-                customEffective / 100) * yaojieMul;
-
-            let extra = calcAir * ((
-                (customEffective === false ? (effList[PS[0]?.tier]?.[PS[0]?.level] || 0) : customEffective)
-                + (PS[0]?.level < 1 && (buff === 2) ? 20 : 0)
-                + (PS[0]?.level < 2 && (buff === 3) ? 40 : 0)) / 100)
-                * (PS[0]?.level < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;
-                extra += calcAir * (PS[0].level < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
-                extra += calcAir * (PS[now].level < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul; 
+            let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;  
+  
+            // 當buff=3且處於後期且境界為返虛到太乙時,強制使用中期的吸收率  
+            const effectiveLevel = (buff === 3 && PS[0]?.level === 2 && [1, 2, 3, 4, 5, 6, 7].includes(PS[0]?.tier)) ? 1 : PS[0]?.level;  
+  
+            let speed1 = calcAir * (customEffective === false ?   
+                ((effList[PS[0]?.tier]?.[effectiveLevel] || 0) / 100) :   
+                customEffective / 100) * yaojieMul;  
+  
+            let extra = calcAir * ((  
+                (customEffective === false ? (effList[PS[0]?.tier]?.[effectiveLevel] || 0) : customEffective)  
+                + (effectiveLevel < 1 && (buff === 2) ? 20 : 0)  
+                + (effectiveLevel < 2 && (buff === 3) ? 40 : 0)) / 100)  
+                * (effectiveLevel < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;  
+                extra += calcAir * (effectiveLevel < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul;   
+                extra += calcAir * (effectiveLevel < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul;   
                 extra += calcAir * completeBuff * (PS[now].tier === PS[0].tier) / 100 * yaojieMul;
-
+            
             let baseStoneEffect = stoneEff[stoneLV];
 
             // 鍛靈加成：在原始基礎上增加
@@ -420,42 +424,10 @@ export default function ExpCounter() {
                 log.add(`${timeString(vd * 8)} (${Math.round(vd / 112.5 * 1000) / 1000}): ${processList[now]}${tierList[PS[now].tier]}${levelList[PS[now].level]}${PS[now].process + 1}重`)
                 reachDays[Math.ceil(vd / 10800 + 1).toString()] = `${processList[now]}${levelList[PS[now].level]}${PS[now].process + 1}重`
             }
-            if (PS[now].process >= exps[PS[now].tier][PS[now].level].length) {  
-                // 檢查是否需要延遲突破(半步特殊邏輯)  
-                const shouldDelayBreakthrough = (  
-                    (now === 0 || now === 1) && // 主修或輔修  
-                    buff === 3 && // 選擇半步  
-                    PS[now].level === 1 && // 當前在中期  
-                    [1, 2, 3, 4, 5, 6, 7].includes(PS[now].tier) // 返虛到太乙  
-                );  
-      
-                if (shouldDelayBreakthrough) {  
-                    // 計算後期+圓滿整個階段需要的總經驗  
-                    const laterStageExp = exps[PS[now].tier][2].reduce((a, b) => a + b, 0);  
-                    const perfectStageExp = exps[PS[now].tier][3].reduce((a, b) => a + b, 0);  
-                    const totalExpNeeded = laterStageExp + perfectStageExp;  
-          
-                    // 如果累積經驗還不夠,繼續累積  
-                    if (PS[now].exp < totalExpNeeded) {  
-                        // 不升級,繼續累積經驗  
-                        // 只在第一次達到中期圓滿時記錄  
-                        if (PS[now].process === exps[PS[now].tier][PS[now].level].length) {  
-                            log.add(`${timeString(vd * 8)}: ${processList[now]}中期圓滿,開始累積經驗 (需要 ${formatNumber(totalExpNeeded)} 才能突破至圓滿)`);  
-                        }  
-                        // 保持在中期最後一重,不升級  
-                    } else {  
-                        // 經驗足夠,一次性突破到圓滿  
-                        PS[now].exp -= totalExpNeeded;  
-                        PS[now].process = 0;  
-                        PS[now].level = 3; // 直接升到圓滿  
-                        log.add(`${timeString(vd * 8)}: ${processList[now]}累積足夠經驗,突破至圓滿`);  
-                    }  
-                } else {  
-                    // 正常升級邏輯  
-                    PS[now].process = 0;  
-                    PS[now].level += 1;  
-                    log.add(`${timeString(vd * 8)} (${Math.round(vd / 112.5 * 1000) / 1000}): ${processList[now]}${tierList[PS[now].tier]}${levelList[PS[now].level]}`);  
-                }  
+            if (PS[now].process >= exps[PS[now].tier][PS[now].level].length) {
+                PS[now].process = 0;
+                PS[now].level += 1;
+                log.add(`${timeString(vd * 8)} (${Math.round(vd / 112.5 * 1000) / 1000}): ${processList[now]}${tierList[PS[now].tier]}${levelList[PS[now].level]}`)
             }
 
             // stop done.
@@ -640,9 +612,11 @@ export default function ExpCounter() {
 
     const [dir, setDir] = useState(0);
 
-    const [fullTime, setFullTime] = useState(0);
-
-    const air = tier === 1 ? voidAir : othersAir;
+    // 當buff=3且處於後期且境界為返虛到太乙時,強制使用中期的吸收率  
+    const effectiveLevel = (buff === 3 && level === 2 && [1, 2, 3, 4, 5, 6, 7].includes(tier)) ? 1 : level;  
+    const effectiveSpeed = customEffective === false ? effList[tier][effectiveLevel] : customEffective;  
+    const effective = cal[0] * effectiveSpeed;  
+    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (effectiveLevel < 1)) + ((buff === 3) * 40 * (effectiveLevel < 2))) * (upT > effectiveLevel ? upRate : 0) / 100 + (buff === 2) * 20 * (effectiveLevel < 1) + (buff === 3 || buff === 4) * 40 * (effectiveLevel < 2);
 
     const effectiveSpeed = customEffective === false ? effList[tier][level] : customEffective;
     const effective = cal[0] * effectiveSpeed;
