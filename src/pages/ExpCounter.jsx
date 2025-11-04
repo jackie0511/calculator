@@ -431,23 +431,25 @@ export default function ExpCounter() {
                 );  
       
                 if (shouldDelayBreakthrough) {  
-                    // 計算後期整個階段需要的總經驗  
+                    // 計算後期+圓滿整個階段需要的總經驗  
                     const laterStageExp = exps[PS[now].tier][2].reduce((a, b) => a + b, 0);  
+                    const perfectStageExp = exps[PS[now].tier][3].reduce((a, b) => a + b, 0);  
+                    const totalExpNeeded = laterStageExp + perfectStageExp;  
           
-                    // 如果累積經驗還不夠後期總經驗,繼續累積  
-                    if (PS[now].exp < laterStageExp) {  
+                    // 如果累積經驗還不夠,繼續累積  
+                    if (PS[now].exp < totalExpNeeded) {  
                         // 不升級,繼續累積經驗  
-                        // 只在第一次達到中期20重時記錄  
-                        if (PS[now].process === 20) {  
-                            log.add(`${timeString(vd * 8)}: 中期圓滿,開始累積後期經驗 (需要 ${formatNumber(laterStageExp)})`);  
+                        // 只在第一次達到中期圓滿時記錄  
+                        if (PS[now].process === exps[PS[now].tier][PS[now].level].length) {  
+                            log.add(`${timeString(vd * 8)}: 中期圓滿,開始累積經驗 (需要 ${formatNumber(totalExpNeeded)} 才能突破至圓滿)`);  
                         }  
-                        // 保持在中期20重,不升級  
+                        // 保持在中期最後一重,不升級  
                     } else {  
-                        // 經驗足夠,一次性突破到後期  
-                        PS[now].exp -= laterStageExp;  
+                        // 經驗足夠,一次性突破到圓滿  
+                        PS[now].exp -= totalExpNeeded;  
                         PS[now].process = 0;  
-                        PS[now].level = 2; // 直接升到後期  
-                        log.add(`${timeString(vd * 8)}: 累積足夠經驗,突破至後期`);  
+                        PS[now].level = 3; // 直接升到圓滿  
+                        log.add(`${timeString(vd * 8)}: 累積足夠經驗,突破至圓滿`);  
                     }  
                 } else {  
                     // 正常升級邏輯  
