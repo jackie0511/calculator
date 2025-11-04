@@ -246,24 +246,20 @@ export default function ExpCounter() {
                 sum.table += gains;
                 fruitAmount = 0;
             }
-            let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;  
-  
-            // 當buff=3且處於後期且境界為返虛到太乙時,強制使用中期的吸收率  
-            const effectiveLevel = (buff === 3 && PS[0]?.level === 2 && [1, 2, 3, 4, 5, 6, 7].includes(PS[0]?.tier)) ? 1 : PS[0]?.level;  
-  
-            let speed1 = calcAir * (customEffective === false ?   
-                ((effList[PS[0]?.tier]?.[effectiveLevel] || 0) / 100) :   
-                customEffective / 100) * yaojieMul;  
-  
-            let extra = calcAir * ((  
-                (customEffective === false ? (effList[PS[0]?.tier]?.[effectiveLevel] || 0) : customEffective)  
-                + (effectiveLevel < 1 && (buff === 2) ? 20 : 0)  
-                + (effectiveLevel < 2 && (buff === 3) ? 40 : 0)) / 100)  
-                * (effectiveLevel < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;  
-                extra += calcAir * (effectiveLevel < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul;   
-                extra += calcAir * (effectiveLevel < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul;   
+            let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;
+            let speed1 = calcAir * (customEffective === false ? 
+                ((effList[PS[0]?.tier]?.[PS[0]?.level] || 0) / 100) : 
+                customEffective / 100) * yaojieMul;
+
+            let extra = calcAir * ((
+                (customEffective === false ? (effList[PS[0]?.tier]?.[PS[0]?.level] || 0) : customEffective)
+                + (PS[0]?.level < 1 && (buff === 2) ? 20 : 0)
+                + (PS[0]?.level < 2 && (buff === 3) ? 40 : 0)) / 100)
+                * (PS[0]?.level < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;
+                extra += calcAir * (PS[0].level < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
+                extra += calcAir * (PS[now].level < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul; 
                 extra += calcAir * completeBuff * (PS[now].tier === PS[0].tier) / 100 * yaojieMul;
-            
+
             let baseStoneEffect = stoneEff[stoneLV];
 
             // 鍛靈加成：在原始基礎上增加
@@ -612,11 +608,9 @@ export default function ExpCounter() {
 
     const [dir, setDir] = useState(0);
 
-    // 當buff=3且處於後期且境界為返虛到太乙時,強制使用中期的吸收率  
-    const effectiveLevel = (buff === 3 && level === 2 && [1, 2, 3, 4, 5, 6, 7].includes(tier)) ? 1 : level;  
-    const effectiveSpeed = customEffective === false ? effList[tier][effectiveLevel] : customEffective;  
-    const effective = cal[0] * effectiveSpeed;  
-    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (effectiveLevel < 1)) + ((buff === 3) * 40 * (effectiveLevel < 2))) * (upT > effectiveLevel ? upRate : 0) / 100 + (buff === 2) * 20 * (effectiveLevel < 1) + (buff === 3 || buff === 4) * 40 * (effectiveLevel < 2);
+    const [fullTime, setFullTime] = useState(0);
+
+    const air = tier === 1 ? voidAir : othersAir;
 
     const effectiveSpeed = customEffective === false ? effList[tier][level] : customEffective;
     const effective = cal[0] * effectiveSpeed;
@@ -624,9 +618,6 @@ export default function ExpCounter() {
     const totalEfficiency = effective + addEfficiency;
     const yaojieEffective = yaojie ? totalEfficiency * 1.7 : totalEfficiency;
     const yaojieMul = yaojie ? 1.7 : 1;
-    const speed = air * ((effective + addEfficiency) / 100) * yaojieMul; 
-    const breatheSpeed = cal[2] * breatheList[tier] * breatheBuf / 100 * breatheTime * 1.9;
-    const medSpeed = cal[3] * medAmount.slice(0, 6).reduce((acc, _, i) => acc + medAmount[i] * medExp[i] * 10000, 0);
     const tableBase = cal[4] * redFruitList[tier] * 1.8 * (1.5 * tableControl[2]) * (9 + (tableControl[0] * 6) + (tableControl[1] * 6));
     const tableSpeed = tableType === 0 ? tableBase * (tableChances[tableChance] / 100) * 2.7 + tableBase * (1 - tableChances[tableChance] / 100) : 0;
     const godDay = [cal[6] * Math.round(((96 * godRegent[gods[0][0]] + 100) / 100 + (gods[0][0] === 5 && godDoubles ? ((96 * godRegent[gods[0][0]] + 100) / 100 * 0.15) : 0)) * 100) / 100, cal[6] * Math.round(((96 * godRegent[gods[1][0]] + 100) / (200 - 200 * (godBuff[1][gods[1][0]] + gods[1][2] * 10) / 100) + (gods[1][0] === 5 && godDoubles ? ((96 * godRegent[gods[1][0]] + 100) / (200 - 200 * (godBuff[1][gods[1][0]] + gods[1][2] * 10) / 100) * 0.15) : 0)) * 100) / 100]
