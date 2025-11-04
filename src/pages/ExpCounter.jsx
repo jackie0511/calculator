@@ -246,27 +246,20 @@ export default function ExpCounter() {
                 sum.table += gains;
                 fruitAmount = 0;
             }
-            // 判斷是否需要使用 level=1 的數值  
-            let effectiveLevel = PS[0]?.level;  
-            if ([4, 5, 6, 7, 8, 9, 10].includes(PS[0]?.tier) &&   
-                PS[0]?.level === 2 &&   
-                buff === 3) {  
-                effectiveLevel = 1;  
-            }
             let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;
-            let speed1 = calcAir * (customEffective === false ?   
-                ((effList[PS[0]?.tier]?.[effectiveLevel] || 0) / 100) :   
+            let speed1 = calcAir * (customEffective === false ? 
+                ((effList[PS[0]?.tier]?.[PS[0]?.level] || 0) / 100) : 
                 customEffective / 100) * yaojieMul;
 
-            let extra = calcAir * ((  
-                (customEffective === false ? (effList[PS[0]?.tier]?.[effectiveLevel] || 0) : customEffective)  
-                + (effectiveLevel < 1 && (buff === 2) ? 20 : 0)  
-                + (effectiveLevel < 2 && (buff === 3) ? 40 : 0)) / 100)  
-                * (effectiveLevel < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;  
-                extra += calcAir * (effectiveLevel < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul;   
-                extra += calcAir * (PS[now].level < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul;   
+            let extra = calcAir * ((
+                (customEffective === false ? (effList[PS[0]?.tier]?.[PS[0]?.level] || 0) : customEffective)
+                + (PS[0]?.level < 1 && (buff === 2) ? 20 : 0)
+                + (PS[0]?.level < 2 && (buff === 3) ? 40 : 0)) / 100)
+                * (PS[0]?.level < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;
+                extra += calcAir * (PS[0].level < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
+                extra += calcAir * (PS[now].level < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul; 
                 extra += calcAir * completeBuff * (PS[now].tier === PS[0].tier) / 100 * yaojieMul;
-        
+
             let baseStoneEffect = stoneEff[stoneLV];
 
             // 鍛靈加成：在原始基礎上增加
@@ -616,18 +609,12 @@ export default function ExpCounter() {
     const [dir, setDir] = useState(0);
 
     const [fullTime, setFullTime] = useState(0);
-    // 判斷顯示用的 effectiveLevel  
-    let displayEffectiveLevel = level;  
-    if ([4, 5, 6, 7, 8, 9, 10].includes(tier) &&   
-        level === 2 &&   
-        buff === 3) {  
-        displayEffectiveLevel = 1;  
-    }
+
     const air = tier === 1 ? voidAir : othersAir;
 
-    const effectiveSpeed = customEffective === false ? effList[tier][displayEffectiveLevel] : customEffective;
+    const effectiveSpeed = customEffective === false ? effList[tier][level] : customEffective;
     const effective = cal[0] * effectiveSpeed;
-    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (displayEffectiveLevel < 1)) + ((buff === 3) * 40 * (displayEffectiveLevel < 2))) * (upT > displayEffectiveLevel ? upRate : 0) / 100 + (buff === 2) * 20 * (displayEffectiveLevel < 1) + (buff === 3 || buff === 4) * 40 * (displayEffectiveLevel < 2);
+    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (level < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (level < 2);
     const totalEfficiency = effective + addEfficiency;
     const yaojieEffective = yaojie ? totalEfficiency * 1.7 : totalEfficiency;
     const yaojieMul = yaojie ? 1.7 : 1;
