@@ -612,30 +612,13 @@ export default function ExpCounter() {
 
     const air = tier === 1 ? voidAir : othersAir;
 
-    // 在 speed/addEfficiency 等計算用這段覆蓋
-    let levelForSpeed = level;
-    if (buff === 3 && tier >= 1 && tier <= 7 && level === 2) {
-      levelForSpeed = 1; // 半步主修後期時，強制用中期計算
-    }
-
-    // 下方把相關的 [tier][level] 替換為 [tier][levelForSpeed] ↓
-
-    // 吸收率、修煉速度公式
-    const effectiveSpeed = customEffective === false ? effList[tier][levelForSpeed] : customEffective;
+    const effectiveSpeed = customEffective === false ? effList[tier][level] : customEffective;
     const effective = cal[0] * effectiveSpeed;
-    const addEfficiency =
-      cal[1] *
-        (effectiveSpeed +
-          ((buff === 2) * 20 * (levelForSpeed < 1)) +
-          ((buff === 3) * 40 * (levelForSpeed < 2))) *
-        (upT > levelForSpeed ? upRate : 0) /
-        100 +
-      (buff === 2) * 20 * (levelForSpeed < 1) +
-      (buff === 3 || buff === 4) * 40 * (levelForSpeed < 2);
+    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (level < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (level < 2);
     const totalEfficiency = effective + addEfficiency;
     const yaojieEffective = yaojie ? totalEfficiency * 1.7 : totalEfficiency;
     const yaojieMul = yaojie ? 1.7 : 1;
-    const speed = air * ((effective + addEfficiency) / 100) * yaojieMul;
+    const speed = air * ((effective + addEfficiency) / 100) * yaojieMul; 
     const breatheSpeed = cal[2] * breatheList[tier] * breatheBuf / 100 * breatheTime * 1.9;
     const medSpeed = cal[3] * medAmount.slice(0, 6).reduce((acc, _, i) => acc + medAmount[i] * medExp[i] * 10000, 0);
     const tableBase = cal[4] * redFruitList[tier] * 1.8 * (1.5 * tableControl[2]) * (9 + (tableControl[0] * 6) + (tableControl[1] * 6));
