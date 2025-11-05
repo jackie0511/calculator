@@ -247,17 +247,21 @@ export default function ExpCounter() {
                 fruitAmount = 0;
             }
             let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;
+            const isMainOverrideL2Buff3 = (PS[0]?.tier >= 4 && PS[0]?.tier <= 10 && PS[0]?.level === 2 && buff === 3);
+            const mainCalcLevel = isMainOverrideL2Buff3 ? 1 : PS[0]?.level;
             let speed1 = calcAir * (customEffective === false ? 
-                ((effList[PS[0]?.tier]?.[PS[0]?.level] || 0) / 100) : 
+                ((effList[PS[0]?.tier]?.[mainCalcLevel] || 0) / 100) : 
                 customEffective / 100) * yaojieMul;
 
             let extra = calcAir * ((
-                (customEffective === false ? (effList[PS[0]?.tier]?.[PS[0]?.level] || 0) : customEffective)
+                (customEffective === false ? (effList[PS[0]?.tier]?.[mainCalcLevel] || 0) : customEffective)
                 + (PS[0]?.level < 1 && (buff === 2) ? 20 : 0)
-                + (PS[0]?.level < 2 && (buff === 3) ? 40 : 0)) / 100)
+                + (mainCalcLevel < 2 && (buff === 3) ? 40 : 0)) / 100)
                 * (PS[0]?.level < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;
                 extra += calcAir * (PS[0].level < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
-                extra += calcAir * (PS[now].level < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul; 
+                const isNowOverrideL2Buff3 = (PS[now]?.tier >= 4 && PS[now]?.tier <= 10 && PS[now]?.level === 2 && buff === 3);
+                const nowCalcLevel = isNowOverrideL2Buff3 ? 1 : PS[now]?.level;
+                extra += calcAir * (nowCalcLevel < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul; 
                 extra += calcAir * completeBuff * (PS[now].tier === PS[0].tier) / 100 * yaojieMul;
 
             let baseStoneEffect = stoneEff[stoneLV];
@@ -612,9 +616,10 @@ export default function ExpCounter() {
 
     const air = tier === 1 ? voidAir : othersAir;
 
-    const effectiveSpeed = customEffective === false ? effList[tier][level] : customEffective;
+    const useLevelForDisplay = (buff === 3 && level === 2 && tier >= 4 && tier <= 10) ? 1 : level;
+    const effectiveSpeed = customEffective === false ? effList[tier][useLevelForDisplay] : customEffective;
     const effective = cal[0] * effectiveSpeed;
-    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (level < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (level < 2);
+    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
     const totalEfficiency = effective + addEfficiency;
     const yaojieEffective = yaojie ? totalEfficiency * 1.7 : totalEfficiency;
     const yaojieMul = yaojie ? 1.7 : 1;
