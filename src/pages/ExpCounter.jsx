@@ -616,7 +616,8 @@ export default function ExpCounter() {
 
     const air = tier === 1 ? voidAir : othersAir;
 
-    const useLevelForDisplay = (buff === 3 && level === 2 && tier >= 4 && tier <= 10) ? 1 : level;
+    const isOverrideActive = (buff === 3 && level === 2 && tier >= 4 && tier <= 10);
+    const useLevelForDisplay = isOverrideActive ? 1 : level;
     const effectiveSpeed = customEffective === false ? effList[tier][useLevelForDisplay] : customEffective;
     const effective = cal[0] * effectiveSpeed;
     const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
@@ -1007,6 +1008,11 @@ export default function ExpCounter() {
                 >
                     修煉速度
                     <span>+{finalSpeed}</span>
+                    {isOverrideActive && (
+                        <span style={{ marginLeft: 8, color: "#90caf9", fontSize: 12 }}>
+                            已套用覆寫（後期+半步→按中期計算）
+                        </span>
+                    )}
                 </AccordionSummary>
                 <AccordionDetails>
                     <Stack alignItems={"center"} justifyContent={"center"} direction={isMobile ? "column" : "row"} spacing={2}>
@@ -1064,6 +1070,11 @@ export default function ExpCounter() {
               >
                 額外吸收率
                 <span>+{finalAdd}</span>
+                {isOverrideActive && (
+                    <span style={{ marginLeft: 8, color: "#90caf9", fontSize: 12 }}>
+                        已套用覆寫（後期+半步→按中期計算）
+                    </span>
+                )}
               </AccordionSummary>
 
               <AccordionDetails>
