@@ -624,9 +624,24 @@ export default function ExpCounter() {
     const levelNum = Number(level);
     const isOverrideActive = (buff === 3 && levelNum === 2 && tierNum >= 4 && tierNum <= 10);
     const useLevelForDisplay = isOverrideActive ? 1 : levelNum;
+    
+    // Debug: 檢查覆寫條件
+    useEffect(() => {
+        console.log('🔍 覆寫檢查:', { 
+            tier, tierNum, 
+            level, levelNum, 
+            buff, 
+            isOverrideActive, 
+            useLevelForDisplay,
+            effectiveSpeed: customEffective === false ? effList[tierNum]?.[useLevelForDisplay] : 'custom'
+        });
+        if (isOverrideActive) {
+            console.log('✅ 覆寫已啟用！使用 level=1 的數值計算');
+        }
+    }, [tier, tierNum, level, levelNum, buff, isOverrideActive, useLevelForDisplay, customEffective]);
     const effectiveSpeed = customEffective === false ? effList[tierNum][useLevelForDisplay] : customEffective;
     const effective = cal[0] * effectiveSpeed;
-    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
+    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (levelNum < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > levelNum ? upRate : 0) / 100 + (buff === 2) * 20 * (levelNum < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
     const totalEfficiency = effective + addEfficiency;
     const yaojieEffective = yaojie ? totalEfficiency * 1.7 : totalEfficiency;
     const yaojieMul = yaojie ? 1.7 : 1;
