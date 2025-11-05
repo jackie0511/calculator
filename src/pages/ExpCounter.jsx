@@ -624,21 +624,6 @@ export default function ExpCounter() {
     const levelNum = Number(level);
     const isOverrideActive = (buff === 3 && levelNum === 2 && tierNum >= 4 && tierNum <= 10);
     const useLevelForDisplay = isOverrideActive ? 1 : levelNum;
-    
-    // Debug: 檢查覆寫條件
-    useEffect(() => {
-        console.log('🔍 覆寫檢查:', { 
-            tier, tierNum, 
-            level, levelNum, 
-            buff, 
-            isOverrideActive, 
-            useLevelForDisplay,
-            effectiveSpeed: customEffective === false ? effList[tierNum]?.[useLevelForDisplay] : 'custom'
-        });
-        if (isOverrideActive) {
-            console.log('✅ 覆寫已啟用！使用 level=1 的數值計算');
-        }
-    }, [tier, tierNum, level, levelNum, buff, isOverrideActive, useLevelForDisplay, customEffective]);
     const effectiveSpeed = customEffective === false ? effList[tierNum][useLevelForDisplay] : customEffective;
     const effective = cal[0] * effectiveSpeed;
     const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (useLevelForDisplay < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > useLevelForDisplay ? upRate : 0) / 100 + (buff === 2) * 20 * (useLevelForDisplay < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
@@ -695,6 +680,44 @@ export default function ExpCounter() {
     // final zone
     const finalSpeed = Math.round(air * effective / 100 * yaojieMul / 8 * 60 * 60 * 24 * 100) / 100;
     const finalAdd   = Math.round(air * (addEfficiency) / 100 * yaojieMul / 8 * 60 * 60 * 24 * 100) / 100;
+    
+    // Debug: 檢查覆寫條件和結果
+    useEffect(() => {
+        const checkOverride = (buff === 3 && levelNum === 2 && tierNum >= 4 && tierNum <= 10);
+        console.log('🔍 覆寫檢查:', { 
+            tier, tierNum, 
+            level, levelNum, 
+            buff, 
+            'buff === 3': buff === 3,
+            'levelNum === 2': levelNum === 2,
+            'tierNum >= 4 && tierNum <= 10': (tierNum >= 4 && tierNum <= 10),
+            isOverrideActive, 
+            checkOverride,
+            useLevelForDisplay,
+            effectiveSpeed,
+            addEfficiency,
+            finalSpeed,
+            finalAdd,
+            'effList[tierNum]': effList[tierNum],
+            'effList[tierNum][useLevelForDisplay]': effList[tierNum]?.[useLevelForDisplay],
+            'effList[tierNum][levelNum]': effList[tierNum]?.[levelNum]
+        });
+        if (isOverrideActive) {
+            console.log('✅ 覆寫已啟用！使用 level=1 的數值計算');
+            const originalSpeed = Math.round(air * (cal[0] * (customEffective === false ? effList[tierNum]?.[levelNum] : customEffective)) / 100 * yaojieMul / 8 * 60 * 60 * 24 * 100) / 100;
+            console.log('📊 數值對比:', {
+                '原本(後期)': {
+                    effectiveSpeed: customEffective === false ? effList[tierNum]?.[levelNum] : customEffective,
+                    finalSpeed: originalSpeed
+                },
+                '覆寫後(中期)': {
+                    effectiveSpeed: effList[tierNum]?.[1],
+                    finalSpeed: finalSpeed
+                }
+            });
+        }
+    }, [tier, tierNum, level, levelNum, buff, isOverrideActive, useLevelForDisplay, customEffective, effectiveSpeed, addEfficiency, finalSpeed, finalAdd, air, cal, yaojieMul]);
+    
     const finalBreathe = Math.round(breatheSpeed * 100) / 100;
     const finalMed = Math.round(medSpeed * 100) / 100;
     const finalTable = Math.round(tableSpeed / 7 * 100) / 100;
