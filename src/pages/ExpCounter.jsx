@@ -257,10 +257,10 @@ export default function ExpCounter() {
 
             let extra = calcAir * ((
                 (customEffective === false ? (effList[ps0TierNum]?.[mainCalcLevel] || 0) : customEffective)
-                + (ps0LevelNum < 1 && (buff === 2) ? 20 : 0)
+                + (mainCalcLevel < 1 && (buff === 2) ? 20 : 0)
                 + (mainCalcLevel < 2 && (buff === 3) ? 40 : 0)) / 100)
-                * (ps0LevelNum < upT ? upRate / 100 : 0) * yaojieMul;
-                extra += calcAir * (ps0LevelNum < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
+                * (mainCalcLevel < upT ? upRate / 100 : 0) * yaojieMul;
+                extra += calcAir * (mainCalcLevel < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
                 const psNowTierNum = Number(PS[now]?.tier);
                 const psNowLevelNum = Number(PS[now]?.level);
                 const isNowOverrideL2Buff3 = (psNowTierNum >= 4 && psNowTierNum <= 10 && psNowLevelNum === 2 && buff === 3);
@@ -641,7 +641,7 @@ export default function ExpCounter() {
     }, [tier, tierNum, level, levelNum, buff, isOverrideActive, useLevelForDisplay, customEffective]);
     const effectiveSpeed = customEffective === false ? effList[tierNum][useLevelForDisplay] : customEffective;
     const effective = cal[0] * effectiveSpeed;
-    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (levelNum < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > levelNum ? upRate : 0) / 100 + (buff === 2) * 20 * (levelNum < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
+    const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (useLevelForDisplay < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > useLevelForDisplay ? upRate : 0) / 100 + (buff === 2) * 20 * (useLevelForDisplay < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
     const totalEfficiency = effective + addEfficiency;
     const yaojieEffective = yaojie ? totalEfficiency * 1.7 : totalEfficiency;
     const yaojieMul = yaojie ? 1.7 : 1;
