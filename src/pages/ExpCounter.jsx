@@ -247,20 +247,24 @@ export default function ExpCounter() {
                 fruitAmount = 0;
             }
             let calcAir = PS[0]?.tier === 1 ? voidAir : othersAir;
-            const isMainOverrideL2Buff3 = (PS[0]?.tier >= 4 && PS[0]?.tier <= 10 && PS[0]?.level === 2 && buff === 3);
-            const mainCalcLevel = isMainOverrideL2Buff3 ? 1 : PS[0]?.level;
+            const ps0TierNum = Number(PS[0]?.tier);
+            const ps0LevelNum = Number(PS[0]?.level);
+            const isMainOverrideL2Buff3 = (ps0TierNum >= 4 && ps0TierNum <= 10 && ps0LevelNum === 2 && buff === 3);
+            const mainCalcLevel = isMainOverrideL2Buff3 ? 1 : ps0LevelNum;
             let speed1 = calcAir * (customEffective === false ? 
-                ((effList[PS[0]?.tier]?.[mainCalcLevel] || 0) / 100) : 
+                ((effList[ps0TierNum]?.[mainCalcLevel] || 0) / 100) : 
                 customEffective / 100) * yaojieMul;
 
             let extra = calcAir * ((
-                (customEffective === false ? (effList[PS[0]?.tier]?.[mainCalcLevel] || 0) : customEffective)
-                + (PS[0]?.level < 1 && (buff === 2) ? 20 : 0)
+                (customEffective === false ? (effList[ps0TierNum]?.[mainCalcLevel] || 0) : customEffective)
+                + (ps0LevelNum < 1 && (buff === 2) ? 20 : 0)
                 + (mainCalcLevel < 2 && (buff === 3) ? 40 : 0)) / 100)
-                * (PS[0]?.level < upT || (PS[0]?.tier < PS[0]?.tier && upT !== 0) ? upRate / 100 : 0) * yaojieMul;
-                extra += calcAir * (PS[0].level < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
-                const isNowOverrideL2Buff3 = (PS[now]?.tier >= 4 && PS[now]?.tier <= 10 && PS[now]?.level === 2 && buff === 3);
-                const nowCalcLevel = isNowOverrideL2Buff3 ? 1 : PS[now]?.level;
+                * (ps0LevelNum < upT ? upRate / 100 : 0) * yaojieMul;
+                extra += calcAir * (ps0LevelNum < 1 && buff === 2 ? 20 : 0) / 100 * yaojieMul; 
+                const psNowTierNum = Number(PS[now]?.tier);
+                const psNowLevelNum = Number(PS[now]?.level);
+                const isNowOverrideL2Buff3 = (psNowTierNum >= 4 && psNowTierNum <= 10 && psNowLevelNum === 2 && buff === 3);
+                const nowCalcLevel = isNowOverrideL2Buff3 ? 1 : psNowLevelNum;
                 extra += calcAir * (nowCalcLevel < 2 && buff === 3 ? 40 : 0) / 100 * yaojieMul; 
                 extra += calcAir * completeBuff * (PS[now].tier === PS[0].tier) / 100 * yaojieMul;
 
@@ -616,9 +620,11 @@ export default function ExpCounter() {
 
     const air = tier === 1 ? voidAir : othersAir;
 
-    const isOverrideActive = (buff === 3 && level === 2 && tier >= 4 && tier <= 10);
-    const useLevelForDisplay = isOverrideActive ? 1 : level;
-    const effectiveSpeed = customEffective === false ? effList[tier][useLevelForDisplay] : customEffective;
+    const tierNum = Number(tier);
+    const levelNum = Number(level);
+    const isOverrideActive = (buff === 3 && levelNum === 2 && tierNum >= 4 && tierNum <= 10);
+    const useLevelForDisplay = isOverrideActive ? 1 : levelNum;
+    const effectiveSpeed = customEffective === false ? effList[tierNum][useLevelForDisplay] : customEffective;
     const effective = cal[0] * effectiveSpeed;
     const addEfficiency = cal[1] * (effectiveSpeed + ((buff === 2) * 20 * (level < 1)) + ((buff === 3) * 40 * (useLevelForDisplay < 2))) * (upT > level ? upRate : 0) / 100 + (buff === 2) * 20 * (level < 1) + (buff === 3 || buff === 4) * 40 * (useLevelForDisplay < 2);
     const totalEfficiency = effective + addEfficiency;
