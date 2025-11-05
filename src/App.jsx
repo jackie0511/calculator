@@ -47,7 +47,7 @@ function App() {
                                 backgroundColor: "gray",
                                 px: 0.5,
                                 borderRadius: 1
-                            }}>暫時不開放</Box>
+                            }}>test</Box>
                         <Button onClick={() => navigator.clipboard.writeText("x")}>複製</Button>
                         </Stack>
                     </DialogContent>
